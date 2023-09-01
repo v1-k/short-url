@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-class CreateLink(BaseModel):
-    short_alias: str
-    original_url: str
+class CreateRequest(BaseModel):
+    alias: Optional[str]
+    url: str
+
+class CreateResponse(BaseModel):
+    alias: str
