@@ -1,27 +1,30 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends, HTTPException
 from fastapi.responses import RedirectResponse
-from ..func import url
+from sqlalchemy.orm import Session
+
 from .. import schema
+from ..db.session import get_db
+from ..db import util
 
 router = APIRouter(
     prefix="",
     tags=['Public API']
 )
 
-# @router.get("/")
-# def get():
-#     return {"public": "public"}
+@router.get("/")
+def get():
+    return {"public": "public"}
 
-@router.get("/{alias}")
-async def redirect(alias: str) -> RedirectResponse:
-    original_url = url.get(alias)
-    if original_url is None:
-        return {"message": "Not found"}
-    return RedirectResponse(url=original_url)
+@router.get("/{short_url}")
+async def redirect(short_url: str, db: Session = Depends(get_db)) -> RedirectResponse:
+    result = util.get(short_url, db)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Not found")
+    return RedirectResponse(url=result.url)
 
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=schema.CreateResponse)
-async def create(data: schema.CreateRequest):
-    alias = url.set(data)
-    response = schema.CreateResponse(alias=alias)
-    return response    
-    
+async def create(data: schema.CreateRequest, db: Session = Depends(get_db)):
+    short_url = util.set(data, db)
+    response = schema.CreateResponse(short_url=short_url)
+    return response

@@ -1,10 +1,9 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional
 
 class CreateRequest(BaseModel):
-    alias: Optional[str]
+    short_url: Optional[str] = None
     url: str
 
 class CreateResponse(BaseModel):
-    alias: str
+    short_url: str
