@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from .. import schema
 from . import model
 
+n = 8
+
 def get(short_url: str, db: Session):
     return db.query(model.Alias).filter(model.Alias.short_url == short_url).first()
 
@@ -25,6 +27,9 @@ def generate_hash(url):
     hex_hash = hash_object.hexdigest()
     return hex_hash
 
+def get_short_hash(hash):
+    return hash[:n]
+
 def is_pair_exist(short_url, url, db: Session):
     existing_alias = db.query(model.Alias).filter(model.Alias.short_url == short_url).first()
     if existing_alias:
@@ -35,12 +40,12 @@ def is_pair_exist(short_url, url, db: Session):
 
 def get_unique_alias(url, db: Session):
     hash = generate_hash(url)
-    short_url = hash[:7]
+    short_url = get_short_hash(hash)
     alias_exist, url_exist = is_pair_exist(short_url, url, db)
     while alias_exist and not url_exist:
         random_number = generate_random_number()
         url = f"{url}{random_number}"
         hash = generate_hash(url)
-        short_url = hash[:7]
+        short_url = get_short_hash(hash)
         alias_exist, url_exist = is_pair_exist(short_url, url, db)
     return ( short_url, url_exist )
