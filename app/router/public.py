@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from .. import schema
 from ..db.session import get_db
 from ..db import util
+from ..util import url
 
 router = APIRouter(
     prefix="",
@@ -25,6 +26,10 @@ async def redirect(short_url: str, db: Session = Depends(get_db)) -> RedirectRes
 
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=schema.CreateResponse)
 async def create(data: schema.CreateRequest, db: Session = Depends(get_db)):
+    if not url.validator(data.url):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Invalid URL: {data.url}")
     short_url = util.set(data, db)
     response = schema.CreateResponse(short_url=short_url)
     return response
+

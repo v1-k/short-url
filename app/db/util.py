@@ -11,6 +11,7 @@ def get(short_url: str, db: Session):
 
 def set(data: schema.CreateRequest, db: Session):
     short_url, url_exist  = get_unique_alias(data.url, db)
+    update_total_alias(db)
     if not url_exist:
         data.short_url = short_url
         new_short_url = model.Alias(**data.model_dump())
@@ -49,3 +50,15 @@ def get_unique_alias(url, db: Session):
         short_url = get_short_hash(hash)
         alias_exist, url_exist = is_pair_exist(short_url, url, db)
     return ( short_url, url_exist )
+
+def update_total_alias(db: Session):
+    row_to_update = db.query(model.TotalAlias).first()
+    if row_to_update is not None:
+        row_to_update.counter = row_to_update.counter + 1
+        db.commit()
+    else:
+        new_TotalAlias = model.TotalAlias(counter=1)
+        db.add(new_TotalAlias)
+        db.commit()
+        db.refresh(new_TotalAlias)
+    db.commit()
