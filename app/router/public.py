@@ -28,7 +28,7 @@ async def redirect(short_url: str, db: Session = Depends(get_db)) -> RedirectRes
 async def create(data: schema.CreateRequest, db: Session = Depends(get_db)):
     if not url.validator(data.url):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=f"Invalid URL: {data.url}")
+                            detail=f"Invalid URL {data.url}")
     short_url = util.set(data, db)
     response = schema.CreateResponse(short_url=short_url)
     return response
