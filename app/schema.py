@@ -7,3 +7,6 @@ class CreateRequest(BaseModel):
 
 class CreateResponse(BaseModel):
     short_url: str
+
+class TotalGeneratedResponse(BaseModel):
+    total: int

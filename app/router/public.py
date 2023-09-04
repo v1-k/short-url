@@ -24,6 +24,12 @@ async def redirect(short_url: str, db: Session = Depends(get_db)) -> RedirectRes
                             detail=f"Not found")
     return RedirectResponse(url=result.url)
 
+@router.get("/r/total", response_model=schema.TotalGeneratedResponse)
+async def getTotal(db: Session = Depends(get_db)):
+    total = util.get_total_generated(db)
+    response = schema.TotalGeneratedResponse(total=total)
+    return response
+
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=schema.CreateResponse)
 async def create(data: schema.CreateRequest, db: Session = Depends(get_db)):
     if not url.validator(data.url):
