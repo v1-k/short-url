@@ -7,14 +7,14 @@ from . import model
 n = 8
 
 def get(short_url: str, db: Session):
-    return db.query(model.Alias).filter(model.Alias.short_url == short_url).first()
+    return db.query(model.URLMap).filter(model.URLMap.short_url == short_url).first()
 
 def set(data: schema.CreateRequest, db: Session):
     short_url, url_exist  = get_unique_alias(data.url, db)
     update_total_alias(db)
     if not url_exist:
         data.short_url = short_url
-        new_short_url = model.Alias(**data.model_dump())
+        new_short_url = model.URLMap(**data.model_dump())
         db.add(new_short_url)
         db.commit()
         db.refresh(new_short_url)
@@ -32,7 +32,7 @@ def get_short_hash(hash):
     return hash[:n]
 
 def is_pair_exist(short_url, url, db: Session):
-    existing_alias = db.query(model.Alias).filter(model.Alias.short_url == short_url).first()
+    existing_alias = db.query(model.URLMap).filter(model.URLMap.short_url == short_url).first()
     if existing_alias:
         if existing_alias.url == url:
             return True, True
@@ -52,13 +52,13 @@ def get_unique_alias(url, db: Session):
     return ( short_url, url_exist )
 
 def update_total_alias(db: Session):
-    row_to_update = db.query(model.TotalAlias).first()
+    row_to_update = db.query(model.URLMapGenerated).first()
     if row_to_update is not None:
-        row_to_update.counter = row_to_update.counter + 1
+        row_to_update.total = row_to_update.total + 1
         db.commit()
     else:
-        new_TotalAlias = model.TotalAlias(counter=1)
-        db.add(new_TotalAlias)
+        new_URLMapGenerated = model.URLMapGenerated(total=1)
+        db.add(new_URLMapGenerated)
         db.commit()
-        db.refresh(new_TotalAlias)
+        db.refresh(new_URLMapGenerated)
     db.commit()
